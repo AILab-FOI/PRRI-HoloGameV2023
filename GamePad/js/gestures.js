@@ -1,24 +1,46 @@
-// More API functions here:
-// https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/pose
+/*
+More API functions here:
+https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/pose
 
-// the link to your model provided by Teachable Machine export panel
+the link to your model provided by Teachable Machine export panel
 
-//LATEST POSE MODEL: https://teachablemachine.withgoogle.com/models/l9442e_e4/
-
+LATEST POSE MODEL: https://teachablemachine.withgoogle.com/models/l9442e_e4/
+*/
 const URL = 'https://teachablemachine.withgoogle.com/models/l9442e_e4/';
 let model, webcam, ctx, labelContainer, maxPredictions;
 let gestures = {
-        Neutral: "Neutral",
-        Right: "Right",
-        Left: "Left",
-        SelectStart: "SelectStart",
-        Up: "Up",
-        Down: "Down",
-    };
+    Neutral: "Neutral",
+    Right: "Right",
+    Left: "Left",
+    SelectStart: "SelectStart",
+    Up: "Up",
+    Down: "Down",
+};
 let oldState = "Neutral";//gestures.Neutral;
 let newState = "Neutral";//gestures.Neutral;
 
-async function init() {
+let ws;
+
+function send( ctrl, context )
+{
+    ws.emit( 'ctrl', { data: JSON.stringify( { "cmd":ctrl, "context":context, "game":"abe" } ) } );
+}
+
+async function init() 
+{
+    ws = io();
+    ws.on('connect', function() {
+        console.log( 'Connected to server!' );
+    });
+    ws.on('error', function( msg ){
+        console.log( msg );
+    });
+    ws.on('stop', function(){
+        alert('Game finished!');
+        window.location.href = "/start";
+    });
+
+
     const modelURL = URL + 'model.json';
     const metadataURL = URL + 'metadata.json';
 
@@ -103,4 +125,14 @@ async function predict() {
 
     // finally draw the poses
     drawPose(pose);
+}
+
+function drawPose(pose) {
+	ctx.drawImage(webcam.canvas, 0, 0);
+	// draw the keypoints and skeleton
+	if (pose) {
+		const minPartConfidence = 0.5;
+		tmPose.drawKeypoints(pose.keypoints, minPartConfidence, ctx);
+		tmPose.drawSkeleton(pose.keypoints, minPartConfidence, ctx);
+	}
 }

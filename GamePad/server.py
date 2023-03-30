@@ -16,7 +16,7 @@ ADDR_OUT = '0.0.0.0'
 PORT = 5000
 
 app = Flask(__name__)
-app.config[ 'SECRET_KEY' ] = 'šekret'
+app.config[ 'SECRET_KEY' ] = 'VelikaTajna321!'
 socketio = SocketIO( app, cors_allowed_origins="*" )
 
 PLAYERS = 0
@@ -99,7 +99,6 @@ def handle_message( message ):
         else:
             pyautogui.keyUp( toggles[ cmd ] )
     print( 'Player', PLAYERS, 'Got', cmd, context )
-
 
 
 # Route for serving the controller
