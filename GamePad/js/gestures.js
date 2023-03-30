@@ -23,6 +23,7 @@ let ws;
 
 function send( ctrl, context )
 {
+    //need to change the hardcoded game argument
     ws.emit( 'ctrl', { data: JSON.stringify( { "cmd":ctrl, "context":context, "game":"abe" } ) } );
 }
 

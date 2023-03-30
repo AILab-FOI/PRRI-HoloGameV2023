@@ -16,7 +16,7 @@ ADDR_OUT = '0.0.0.0'
 PORT = 5000
 
 app = Flask(__name__)
-app.config[ 'SECRET_KEY' ] = 'VelikaTajna321!'
+app.config[ 'SECRET_KEY' ] = 'šekret'
 socketio = SocketIO( app, cors_allowed_origins="*" )
 
 PLAYERS = 0
