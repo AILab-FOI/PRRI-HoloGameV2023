@@ -7,6 +7,11 @@ import json
 import pyautogui
 import subprocess
 import threading
+from threading import Thread
+import time
+import random
+import RPI.GPIO as GPIO
+PIR_PIN = 21
 
 from config import GAMES
 
@@ -21,6 +26,8 @@ socketio = SocketIO( app, cors_allowed_origins="*" )
 
 PLAYERS = 0
 GAME_STARTED = False
+
+cameraSignal = False
 
 # A set to keep track of connected clients
 connected_clients = set()
@@ -45,6 +52,20 @@ def popenAndCall( onExit, *popenArgs ):
     # returns immediately after the thread starts
     return thread
 
+def background_thread():
+    while True:
+        time.sleep(5)
+        if sendSignal() == True:
+            print("Emitting for camera..." + str(cameraSignal))
+            socketio.emit('startCamera', {'message': 'Server generated event'}, broadcast=True, namespace='/')
+            cameraSignal = False
+
+def sendSignal():
+    return cameraSignal
+    
+def motiondetect():
+    if (cameraSignal == False):
+        cameraSignal = True
 
 @socketio.on( 'connect' )
 def connect():
@@ -118,6 +139,11 @@ def ctrl():
 # Route for serving the start button
 @app.route( '/start' )
 def start():
+    GPIO.setup(PIR_PIN, GPIO.IN)
+    GPIO.add_event_detect(PIR_PIN, GPIO.RISING, callback=motiondetect)
+    Cthread = Thread(target=background_thread)
+    Cthread.daemon = True
+    Cthread.start()
     return render_template( 'index.html' )
 
 # Routes for serving static files
