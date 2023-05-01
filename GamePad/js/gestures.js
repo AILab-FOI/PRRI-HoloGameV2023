@@ -6,6 +6,8 @@ the link to your model provided by Teachable Machine export panel
 
 LATEST POSE MODEL: https://teachablemachine.withgoogle.com/models/l9442e_e4/
 */
+addEventListener("load", (event) => { init() });
+
 const URL = 'https://teachablemachine.withgoogle.com/models/l9442e_e4/';
 let model, webcam, ctx, labelContainer, maxPredictions;
 let gestures = {
@@ -20,6 +22,7 @@ let oldState = "Neutral";//gestures.Neutral;
 let newState = "Neutral";//gestures.Neutral;
 
 let ws;
+let cameraOn = false;
 
 function send( ctrl, context )
 {
@@ -40,6 +43,32 @@ async function init()
         alert('Game finished!');
         window.location.href = "/start";
     });
+    ws.on('startCamera', async function( msg ){
+        
+        if (cameraOn)
+            return;
+        
+        console.log("Starting camera...");
+        
+        // Convenience function to setup a webcam
+        const flip = true; // whether to flip the webcam
+        webcam = new tmPose.Webcam(200, 200, flip); // width, height, flip
+        await webcam.setup(); // request access to the webcam
+        webcam.play();
+        window.requestAnimationFrame(loop);
+
+        // append/get elements to the DOM
+        const canvas = document.getElementById('canvas');
+        canvas.width = 200; canvas.height = 200;
+        ctx = canvas.getContext('2d');
+        labelContainer = document.getElementById('label-container');
+        for (let i = 0; i < maxPredictions; i++) { // and class labels
+            labelContainer.appendChild(document.createElement('div'));
+        }
+        
+        console.log("Camera started!");
+        cameraOn = true;
+    });
 
 
     const modelURL = URL + 'model.json';
@@ -52,21 +81,7 @@ async function init()
     model = await tmPose.load(modelURL, metadataURL);
     maxPredictions = model.getTotalClasses();
 
-    // Convenience function to setup a webcam
-    const flip = true; // whether to flip the webcam
-    webcam = new tmPose.Webcam(200, 200, flip); // width, height, flip
-    await webcam.setup(); // request access to the webcam
-    webcam.play();
-    window.requestAnimationFrame(loop);
-
-    // append/get elements to the DOM
-    const canvas = document.getElementById('canvas');
-    canvas.width = 200; canvas.height = 200;
-    ctx = canvas.getContext('2d');
-    labelContainer = document.getElementById('label-container');
-    for (let i = 0; i < maxPredictions; i++) { // and class labels
-        labelContainer.appendChild(document.createElement('div'));
-    }
+    
 }
 
 async function loop(timestamp) {

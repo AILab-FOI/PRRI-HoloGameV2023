@@ -10,7 +10,7 @@ import threading
 from threading import Thread
 import time
 import random
-import RPI.GPIO as GPIO
+#import RPI.GPIO as GPIO
 PIR_PIN = 21
 
 from config import GAMES
@@ -22,7 +22,9 @@ PORT = 5000
 
 app = Flask(__name__)
 app.config[ 'SECRET_KEY' ] = 'šekret'
-socketio = SocketIO( app, cors_allowed_origins="*" )
+socketio = SocketIO( app, cors_allowed_origins="*", async_mode='eventlet')
+import eventlet
+eventlet.monkey_patch()
 
 PLAYERS = 0
 GAME_STARTED = False
@@ -54,8 +56,11 @@ def popenAndCall( onExit, *popenArgs ):
 
 def background_thread():
     while True:
+        global count
         time.sleep(5)
+        motiondetect() # Remove this when testing with a real motion sensor
         if sendSignal() == True:
+            global cameraSignal
             print("Emitting for camera..." + str(cameraSignal))
             socketio.emit('startCamera', {'message': 'Server generated event'}, broadcast=True, namespace='/')
             cameraSignal = False
@@ -64,6 +69,7 @@ def sendSignal():
     return cameraSignal
     
 def motiondetect():
+    global cameraSignal
     if (cameraSignal == False):
         cameraSignal = True
 
@@ -139,8 +145,8 @@ def ctrl():
 # Route for serving the start button
 @app.route( '/start' )
 def start():
-    GPIO.setup(PIR_PIN, GPIO.IN)
-    GPIO.add_event_detect(PIR_PIN, GPIO.RISING, callback=motiondetect)
+    #GPIO.setup(PIR_PIN, GPIO.IN)
+    #GPIO.add_event_detect(PIR_PIN, GPIO.RISING, callback=motiondetect)
     Cthread = Thread(target=background_thread)
     Cthread.daemon = True
     Cthread.start()
