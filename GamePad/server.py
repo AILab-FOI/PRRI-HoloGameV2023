@@ -10,7 +10,7 @@ import threading
 from threading import Thread
 import time
 import random
-#import RPI.GPIO as GPIO
+import RPI.GPIO as GPIO
 PIR_PIN = 21
 
 from config import GAMES
@@ -145,8 +145,8 @@ def ctrl():
 # Route for serving the start button
 @app.route( '/start' )
 def start():
-    #GPIO.setup(PIR_PIN, GPIO.IN)
-    #GPIO.add_event_detect(PIR_PIN, GPIO.RISING, callback=motiondetect)
+    GPIO.setup(PIR_PIN, GPIO.IN)
+    GPIO.add_event_detect(PIR_PIN, GPIO.RISING, callback=motiondetect)
     Cthread = Thread(target=background_thread)
     Cthread.daemon = True
     Cthread.start()
