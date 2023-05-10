@@ -106,13 +106,14 @@ def handle_message( message ):
 @app.route( '/' )
 def ctrl():
     global GAME_STARTED
-    def game_exit_callback():
-        GAME_STARTED = False
-        print( 'Game finished! Asking clients to stop.' )
-        socketio.server.emit( 'stop' )
-        print( 'Done!' )
-    popenAndCall( lambda: game_exit_callback(), GAME[ 'executable' ] )
-    GAME_STARTED = True  
+    if (GAME_STARTED == False):
+        def game_exit_callback():
+            GAME_STARTED = False
+            print( 'Game finished! Asking clients to stop.' )
+            socketio.server.emit( 'stop' )
+            print( 'Done!' )
+        popenAndCall( lambda: game_exit_callback(), GAME[ 'executable' ] )
+        GAME_STARTED = True  
     return render_template( 'ctrl.html', game='abe' )
 
 
@@ -120,6 +121,10 @@ def ctrl():
 @app.route( '/start' )
 def start():
     return render_template( 'index.html' )
+
+@app.route( '/timed-out' )
+def serve_timed_out():
+    return render_template( 'timed_out.html' )
 
 # Routes for serving static files
 @app.route( '/images/<path:path>' )
