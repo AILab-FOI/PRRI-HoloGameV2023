@@ -1,0 +1,192 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+   background-image: url("/images/pozadina/plava.png");
+   background-repeat: no-repeat;
+   background-position: center;
+   background-size: cover;
+}
+
+.container {
+   position: relative;
+   height: 100vh; /* Set container to full viewport height */
+   display: flex;
+   justify-content: center;
+   align-items: center;
+ }
+ 
+ .controller-wrapper {
+   width: 80%;
+   padding-top: 50%; /* This sets the aspect ratio to 2:1 (height:width) */
+   position: relative;
+ }
+ 
+ .controller-content {
+   position: absolute;
+   top: 0;
+   left: 0;
+   right: 0;
+   bottom: 0;
+   display: flex;
+   flex-direction: column;
+ }
+ 
+ .controller-content .upper {
+    flex: 0 0 40%;
+    width: 100%;
+ }
+ 
+ .controller-content .lower {
+    flex: 0 0 60%;
+    width: 100%;
+ }
+ 
+ .controller-content .upper .btn-background {
+   position: absolute;
+   /* background-color: brown; */
+   width: 10%;
+   padding-bottom: 10%; /* This sets the height equal to the width */
+   max-width: 100%; /* Make it responsive */
+   background-image: url('/images/postavke/image-removebg-preview.png');
+   background-position: center;
+   background-repeat: no-repeat;
+   background-size: contain;
+ }
+
+.start-container {
+   position: relative;
+   width: 30%;
+   height: 90%;
+   left: 50%;
+   top:50%;
+   transform: translate(-50%, -50%);
+   display: flex;
+   flex-direction: column;
+}
+
+.btn {
+   background-position: center;
+   background-size: contain;
+   background-repeat: no-repeat;
+}
+
+.btn-start, .btn-select {
+   width: 100%;
+   flex: 0 0 40%;
+   position: relative;
+   background-image: url('/images/start_select/start.png');
+}
+.btn-select {
+   background-image: url('/images/start_select/select.png');
+}
+
+
+.lower {
+   position: relative;
+   display: flex;
+}
+
+.left-controls, .right-controls {
+   flex: 0 0 50%;
+}
+
+.controls-container {
+   width: 60%;
+   padding-top: 60%; /* This sets the aspect ratio to 2:1 (height:width) */
+   position: relative;
+   left: 50%;
+   top: 50%;
+   transform: translate(-50%, -50%);
+ }
+ 
+ .controls-wrapper {
+   position: absolute;
+   top: 0;
+   left: 0;
+   right: 0;
+   bottom: 0;
+   display: flex;
+   flex-direction: column;
+ }
+
+.left-controls .btn {
+   background-image: url('/images/lijevi_kontroler/gumb.png');
+   background-position: center;
+   background-size: contain;
+   background-repeat: no-repeat;
+   position: absolute;
+   height: 50%;
+   width: 50%;
+   background-color: transparent;
+ }
+
+ .controls-wrapper .btn-up {
+   left:50%;
+   top:-15%;
+   transform: translate(-50%);
+ }
+ .controls-wrapper .btn-right {
+   right:-15%;
+   top:50%;
+   transform: rotate(90deg) translateX(-50%);
+ }
+ .controls-wrapper .btn-down {
+   bottom:-15%;
+   left:50%;
+   transform: rotate(180deg) translateX(50%);
+ }
+ .controls-wrapper .btn-left {
+   left:-15%;
+   top:50%;
+   transform: rotate(270deg) translateX(50%);
+ }
+ .controls-wrapper .btn-center {
+   left:50%;
+   top:50%;
+   transform: translate(-52%, -55%);
+   background-image: url('/images/lijevi_kontroler/srediste.png');
+ }
+
+
+ .btn-interface {
+   background-image: url("/images/desni_kontroler/sucelje_gumba.png");
+   background-position: center;
+   background-size: contain;
+   background-repeat: no-repeat;
+   position: relative;
+   left: 50%;
+   top: 50%;
+   width: 100%;
+   height: 100%;
+   transform: translate(-50%, -50%);
+ }
+
+ .btn-interface .btn-a {
+   background-image: url("/images/desni_kontroler/gumb_a.png"); 
+   position: absolute;
+   width: 60%;
+   height: 60%;
+   top: -14%;
+   left: -10%;
+ }
+
+ .btn-interface .btn-b {
+   background-image: url("/images/desni_kontroler/gumb_b.png"); 
+   position: absolute;
+   width: 60%;
+   height: 60%;
+   bottom: -10%;
+   right: -8%;
+ }
+
+
+
+ .btn:active {
+   background-color: transparent;
+   -webkit-filter: brightness(0.7);
+  filter: brightness(0.7);
+ }
+ 

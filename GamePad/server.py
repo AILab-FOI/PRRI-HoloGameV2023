@@ -10,13 +10,11 @@ import threading
 
 from config import GAMES
 
-GAME = GAMES[ 'abe' ] # change this when multiple games are available
-
 ADDR_OUT = '0.0.0.0'
-PORT = 5000
+PORT = 5001
 
 app = Flask(__name__)
-app.config[ 'SECRET_KEY' ] = 'šekret'
+app.config[ 'SECRET_KEY' ] = 'VelikaTajna321!'
 socketio = SocketIO( app, cors_allowed_origins="*" )
 
 PLAYERS = 0
@@ -29,9 +27,9 @@ def popenAndCall( onExit, *popenArgs ):
     """
     Runs the given args in a subprocess.Popen, and then calls the function
     onExit when the subprocess completes.
-    onExit is a callable object, and popenArgs is a list/tuple of args that 
+    onExit is a callable object, and popenArgs is a list/tuple of args that
     would give to subprocess.Popen.
-    
+
     Adapted from: http://stackoverflow.com/questions/2581817/python-subprocess-callback-when-cmd-exits
     """
 
@@ -89,7 +87,7 @@ def handle_message( message ):
         print( "Error, unknown game! Player", PLAYERS )
         emit( 'error', {"message": "Error! Unknown game!" }, broadcast=True )
         return
-    
+
     if cmd in GAMES[ game ][ 'taps' ]:
         if context == "start":
             pyautogui.press( toggles[ cmd ] ) # discard stop, only one tap is needed
@@ -100,31 +98,25 @@ def handle_message( message ):
             pyautogui.keyUp( toggles[ cmd ] )
     print( 'Player', PLAYERS, 'Got', cmd, context )
 
-
-
-# Route for serving the controller
+# Route for games
 @app.route( '/' )
-def ctrl():
+def run_game():
+    value = request.args.get('param'); # catching game name from url
+    GAME = GAMES[ value ] # find game in dictionary
     global GAME_STARTED
-    if (GAME_STARTED == False):
-        def game_exit_callback():
-            GAME_STARTED = False
-            print( 'Game finished! Asking clients to stop.' )
-            socketio.server.emit( 'stop' )
-            print( 'Done!' )
-        popenAndCall( lambda: game_exit_callback(), GAME[ 'executable' ] )
-        GAME_STARTED = True  
-    return render_template( 'ctrl.html', game='abe' )
-
+    def game_exit_callback():
+        GAME_STARTED = False
+        print( 'Game finished! Asking clients to stop.' )
+        socketio.server.emit( 'stop', broadcast=True ) # TODO: Not working for some reason!
+        print( 'Done!' )
+    popenAndCall( lambda: game_exit_callback(), *GAME[ 'executable' ] )
+    GAME_STARTED = True
+    return render_template( 'ctrl.html', game= value )
 
 # Route for serving the start button
 @app.route( '/start' )
 def start():
-    return render_template( 'index.html' )
-
-@app.route( '/timed-out' )
-def serve_timed_out():
-    return render_template( 'timed_out.html' )
+    return render_template( 'ctrl.html',game = 'mainPage' )
 
 # Routes for serving static files
 @app.route( '/images/<path:path>' )
@@ -138,4 +130,4 @@ def serve_js( path ):
 
 if __name__ == '__main__':
     print( 'Starting server ...' )
-    socketio.run( app, host='0.0.0.0', port=5000 )
+    socketio.run( app, host='0.0.0.0', port=5001 )
