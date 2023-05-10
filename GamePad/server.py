@@ -111,21 +111,30 @@ def run_game():
         print( 'Done!' )
     popenAndCall( lambda: game_exit_callback(), *GAME[ 'executable' ] )
     GAME_STARTED = True
-    return render_template( 'ctrl.html', game= value )
+    return render_template( 'ctrl.html', game= value)
 
 # Route for serving the start button
 @app.route( '/start' )
 def start():
-    return render_template( 'ctrl.html',game = 'mainPage' )
+    return render_template( 'index.html',game = 'mainPage' )
+
+# @app.route( '/picker' )
+# def picker():
+#     return render_template( '../GamePicker/index.html',game = 'mainPage' )
 
 # Routes for serving static files
-@app.route( '/images/<path:path>' )
-def serve_images( path ):
-    return send_from_directory( 'images', path )
+@app.route( '/gamepad-files/<path:path>' )
+def serve_gamepad( path ):
+    return send_from_directory( 'gamepad-files', path )
 
-@app.route( '/js/<path:path>' )
-def serve_js( path ):
-    return send_from_directory( 'js', path )
+
+@app.route( '/gamepicker-files/<path:path>' )
+def serve_gamepicker( path ):
+    return send_from_directory( 'gamepicker-files', path )
+
+# @app.route( '/gamepad-files/js/<path:path>' )
+# def serve_js( path ):
+#     return send_from_directory( 'js', path )
 
 
 if __name__ == '__main__':

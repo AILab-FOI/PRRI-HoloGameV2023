@@ -28,7 +28,7 @@ abe = {
 bunner = {
     "title": "Bunner",
     "players": 1,
-    "executable": [ "pgzrun", "/usr/share/code-the-classics/bunner/bunner.py" ],
+    "executable": [ "pgzrun", "/Users/timjuic/Desktop/hologameV/GamePicker/GameFiles/bunner/bunner.py" ],
     "toggles": ["UP", "DOWN", "LEFT", "RIGHT"],
     "taps": ["SELECT", "START", "A", "B"],
     "controls": [

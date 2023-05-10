@@ -1,52 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retro Game Start Button</title>
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #222;
-        }
-        .retro-button {
-            display: inline-block;
-            font-family: "Press Start 2P", monospace;
-            font-size: 1rem;
-            text-align: center;
-            text-decoration: none;
-            color: #fff;
-            background-color: #333;
-            border: 4px solid #444;
-            padding: 10px 20px;
-            box-shadow: inset 0px 0px 5px rgba(0, 0, 0, 0.5);
-            transition: all 0.2s;
-        }
-        .retro-button:hover {
-            background-color: #555;
-            border-color: #666;
-        }
-        .retro-button:active {
-            box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.5);
-            background-color: #444;
-        }
-    </style>
+   <meta charset="UTF-8">
+   <link rel="stylesheet" href="/gamepicker-files/style.css">
+   <script defer src="/gamepicker-files/app.js" type="module"></script>
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Odabir igre</title>
 </head>
 <body>
-  <a href="/" class="retro-button">Start Game</a>
-  <script>
-    // This is an optional script to load the "Press Start 2P" font from Google Fonts
-    // You can download and host the font locally if you prefer
-    (function() {
-        var link = document.createElement("link");
-        link.rel = "stylesheet";
-        link.href = "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap";
-        document.head.appendChild(link);
-    })();
-</script>
+   <div class="picker-container">
+      <div class="picker-content">
+         <div class="top">
+            <div class="foi"></div>
+         </div>
+
+         <div class="main">
+            <div class="left-arrow"></div>
+            <div class="games-container">
+              <div class="game" data-name=""></div>
+              <div class="game" data-name=""></div>
+              <div class="game" data-name=""></div>
+              <div class="game" data-name=""></div>
+              <div class="game" data-name=""></div>
+              <div class="game" data-name=""></div>
+            </div>
+            <div class="right-arrow"></div>
+         </div>
+
+         <div class="bottom">
+            <div class="hologame">
+               <div class="controller-left controller"></div>
+               <div class="controller-right controller"></div>
+            </div>
+         </div>
+      </div>
+      
+   </div>
 </body>
 </html>
