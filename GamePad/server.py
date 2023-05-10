@@ -109,7 +109,7 @@ def ctrl():
     def game_exit_callback():
         GAME_STARTED = False
         print( 'Game finished! Asking clients to stop.' )
-        socketio.server.emit( 'stop', broadcast=True ) # TODO: Not working for some reason!
+        socketio.server.emit( 'stop' )
         print( 'Done!' )
     popenAndCall( lambda: game_exit_callback(), GAME[ 'executable' ] )
     GAME_STARTED = True  
