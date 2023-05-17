@@ -19,9 +19,14 @@ socketio = SocketIO( app, cors_allowed_origins="*" )
 
 PLAYERS = 0
 GAME_STARTED = False
+GAME
 
 # A set to keep track of connected clients
 connected_clients = set()
+
+active_players = set()
+
+player_waiting_queue = []
 
 def popenAndCall( onExit, *popenArgs ):
     """
@@ -43,21 +48,41 @@ def popenAndCall( onExit, *popenArgs ):
     # returns immediately after the thread starts
     return thread
 
+def addPlayer(sid){
+    global PLAYERS, GAME, GAME_STARTED
+    connected_clients.add( sid )
+    max_players = GAME[ "players" ]
+    if not GAME_STARTED:
+        max_players = 1
+
+    if PLAYERS + 1 > GAME[ "players" ]:
+        player_waiting_queue.append(sid)
+        sid.emit("redirect", "/waiting_queue")
+    else
+        PLAYERS += 1
+        active_players.add(sid)
+}
+
+def removeFromCollections(sid){
+    global PLAYERS
+    if sid in active_players:
+        active_players.remove(sid)
+        active_players.add(player_waiting_queue.pop(0))
+    else:
+        PLAYERS -= 1
+        player_waiting_queue.remove(sid)
+    connected_clients.remove(sid)
+}
 
 @socketio.on( 'connect' )
 def connect():
     print( 'Client connected:', request.sid )
-    connected_clients.add( request.sid )
-    global PLAYERS
-    PLAYERS += 1
-
+    addPlayer(request.sid)
 
 @socketio.on( 'disconnect' )
 def disconnect():
     print( 'Client disconnected:', request.sid )
-    connected_clients.remove( request.sid )
-    global PLAYERS
-    PLAYERS -= 1
+    removeFromCollections(request.sid)
 
 @socketio.on( 'ctrl' )
 def handle_message( message ):
@@ -101,9 +126,9 @@ def handle_message( message ):
 # Route for games
 @app.route( '/' )
 def run_game():
+    global GAME_STARTED, GAME
     value = request.args.get('param'); # catching game name from url
     GAME = GAMES[ value ] # find game in dictionary
-    global GAME_STARTED
     def game_exit_callback():
         GAME_STARTED = False
         print( 'Game finished! Asking clients to stop.' )
