@@ -27,6 +27,9 @@ var ws = io();
 	    alert('Game finished!');
 	    window.location.href = "/start";
 	});
+	ws.on('redirect', function(location){
+		window.location.href = location
+	})
 	
 	function send( ctrl, context )
 	{

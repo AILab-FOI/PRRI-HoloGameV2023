@@ -153,6 +153,10 @@ app.route( '/timed-out' )
 def serve_timed_out():
     return render_template( 'timed_out.html' )
 
+app.route('/waiting_queue')
+def serve_waiting_queue():
+    return render_template('waiting_queue')
+
 # Routes for serving static files
 @app.route( '/gamepad-files/<path:path>' )
 def serve_gamepad( path ):
