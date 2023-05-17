@@ -148,6 +148,11 @@ def start():
 # def picker():
 #     return render_template( '../GamePicker/index.html',game = 'mainPage' )
 
+# Route for disconnecting timed out players
+app.route( '/timed-out' )
+def serve_timed_out():
+    return render_template( 'timed_out.html' )
+
 # Routes for serving static files
 @app.route( '/gamepad-files/<path:path>' )
 def serve_gamepad( path ):
