@@ -118,6 +118,7 @@ def run_game():
 def start():
     return render_template( 'index.html',game = 'mainPage' )
 
+
 # @app.route( '/picker' )
 # def picker():
 #     return render_template( '../GamePicker/index.html',game = 'mainPage' )

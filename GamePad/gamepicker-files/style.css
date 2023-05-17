@@ -109,6 +109,8 @@ body {
    height: 8%;
    top:50%;
    transform: translateY(-50%);
+   background-color: transparent;
+   border: none;
 }
 
 .left-arrow, .right-arrow {
@@ -141,9 +143,26 @@ body {
    background-position: center;
    background-repeat: no-repeat;
    background-size: 100% 100%;
+   position: relative;
    /* background-image: url("/Sucelje/game-img-1.png"); */
+   background-color: aqua;
 }
 
 .main .games-container .game:hover {
    transform: scale(1.1);
+}
+.main .games-container .game::after {
+   content: "";
+   position: absolute;
+   top: 0;
+   right: 0;
+   bottom: 0;
+   left: 0;
+   border: 1vw solid white;
+   display: none;
+ }
+
+
+.main .games-container .game:focus::after {
+   display: block;
 }
