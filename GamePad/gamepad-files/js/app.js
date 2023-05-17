@@ -31,7 +31,7 @@ var ws = io();
 	
 	function send( ctrl, context )
 	{
-	    ws.emit( 'ctrl', { data: JSON.stringify( { "cmd":ctrl, "context":context, "game":"{{game}}" } ) } );
+	    ws.emit( 'ctrl', { data: JSON.stringify( { "cmd":ctrl, "context":context } ) } );
 	}
 	
 	$('.cbutton').on( 'mousedown touchstart', function( event ){

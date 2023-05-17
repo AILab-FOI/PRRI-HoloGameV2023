@@ -19,6 +19,8 @@ socketio = SocketIO( app, cors_allowed_origins="*" )
 
 PLAYERS = 0
 GAME_STARTED = False
+GAME_NAME = "mainPage"
+
 
 # A set to keep track of connected clients
 connected_clients = set()
@@ -59,34 +61,56 @@ def disconnect():
     global PLAYERS
     PLAYERS -= 1
 
+@socketio.on("game-started")
+def handle_game_clicked(game_name):
+   global GAME_NAME
+   print(f"Game clicked: {game_name}")
+   GAME_NAME = game_name
+   GAME = GAMES[ game_name ] # setting current game
+   print("SET GAME TO", GAME_NAME)
+
+   global GAME_STARTED
+   def game_exit_callback():
+        GAME_STARTED = False
+        print( 'Game finished! Asking clients to stop.' )
+        socketio.server.emit( 'stop', broadcast=True ) # TODO: Not working for some reason!
+        print( 'Done!' )
+   popenAndCall( lambda: game_exit_callback(), *GAME[ 'executable' ] )
+   GAME_STARTED = True
+   return
+
 @socketio.on( 'ctrl' )
 def handle_message( message ):
     print( 'ctrl', message )
     global PLAYERS, GAME_STARTED, GAMES
-    if not GAME_STARTED:
-        print( 'Game aborted or not started! Player', PLAYERS )
-        emit( 'error', { "message": "Game hasn't started or stopped running!" }, broadcast=True )
-        return
+   #  if not GAME_STARTED:
+   #      print( 'Game aborted or not started! Player', PLAYERS )
+   #      emit( 'error', { "message": "Game hasn't started or stopped running!" }, broadcast=True )
+   #      return
     try:
         msg = json.loads( message[ 'data' ] )
     except Exception as e:
         print( "Error while loading message:", message )
         emit( 'error', { "message": "Your browser sent an unparsable message." }, broadcast=True )
         return
+    
+    print("msg", msg)
     cmd = msg[ "cmd" ]
     context = msg[ "context" ]
-    game = msg[ "game" ]
+    game = GAME_NAME
+    print("CURRENT GAME", game)
+
     if PLAYERS > GAMES[ game ][ "players" ]:
         print( "Too many players! Player", PLAYERS )
         emit( 'error', { "message": "Too many players already connected for this game." }, broadcast=True )
         return
     # TODO: add controls for other players
-    try:
-        toggles = GAMES[ game ][ "controls" ][ PLAYERS - 1 ]
-    except Exception as e:
-        print( "Error, unknown game! Player", PLAYERS )
-        emit( 'error', {"message": "Error! Unknown game!" }, broadcast=True )
-        return
+   #  try:
+    toggles = GAMES[ game ][ "controls" ][ PLAYERS - 1 ]
+   #  except Exception as e:
+   #      print( "Error, unknown game! Player", PLAYERS )
+   #      emit( 'error', {"message": "Error! Unknown game!" }, broadcast=True )
+   #      return
 
     if cmd in GAMES[ game ][ 'taps' ]:
         if context == "start":
@@ -98,25 +122,29 @@ def handle_message( message ):
             pyautogui.keyUp( toggles[ cmd ] )
     print( 'Player', PLAYERS, 'Got', cmd, context )
 
-# Route for games
-@app.route( '/' )
-def run_game():
-    value = request.args.get('param'); # catching game name from url
-    GAME = GAMES[ value ] # find game in dictionary
-    global GAME_STARTED
-    def game_exit_callback():
-        GAME_STARTED = False
-        print( 'Game finished! Asking clients to stop.' )
-        socketio.server.emit( 'stop', broadcast=True ) # TODO: Not working for some reason!
-        print( 'Done!' )
-    popenAndCall( lambda: game_exit_callback(), *GAME[ 'executable' ] )
-    GAME_STARTED = True
-    return render_template( 'ctrl.html', game= value)
+# # Route for games
+# @app.route( '/' )
+# def run_game():
+#     value = request.args.get('param'); # catching game name from url
+#     GAME = GAMES[ value ] # find game in dictionary
+#     global GAME_STARTED
+#     def game_exit_callback():
+#         GAME_STARTED = False
+#         print( 'Game finished! Asking clients to stop.' )
+#         socketio.server.emit( 'stop', broadcast=True ) # TODO: Not working for some reason!
+#         print( 'Done!' )
+#     popenAndCall( lambda: game_exit_callback(), *GAME[ 'executable' ] )
+#     GAME_STARTED = True
+#     return
 
 # Route for serving the start button
 @app.route( '/start' )
 def start():
     return render_template( 'index.html',game = 'mainPage' )
+
+@app.route( '/gamepad' )
+def show_gamepad():
+    return render_template( 'ctrl.html',game = 'mainPage' )
 
 
 # @app.route( '/picker' )

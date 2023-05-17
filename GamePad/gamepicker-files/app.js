@@ -6,6 +6,17 @@ let gameHtmlElements = document.getElementsByClassName("game");
 let leftArrow = document.querySelector('.left-arrow')
 let rightArrow = document.querySelector('.right-arrow')
 let clickableButtons = document.querySelectorAll(".clickable-button")
+const socket = io();
+console.log(socket);
+
+// client-side
+socket.on("connect", () => {
+   console.log(socket.id); // x8WIv7-mJelg7on_ALbx
+ });
+ 
+ socket.on("disconnect", () => {
+   console.log(socket.id); // undefined
+ });
 
 let focusedElement = document.activeElement;
 
@@ -37,8 +48,8 @@ Array.from(gameHtmlElements).forEach(element => {
    element.addEventListener("click", (e) => {
 
       let gameName = e.target.dataset.name
-      
-      window.location.href = `/?param=${gameName}`;
+      console.log("Pokretanje igre:", gameName);
+      socket.emit("game-started", gameName);
       
       return;
       fetch(`http://localhost:5001/?param=${gameName}`)

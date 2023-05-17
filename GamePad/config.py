@@ -45,8 +45,59 @@ bunner = {
     ]
 }
 
+soccer = {
+    "title": "soccer",
+    "players": 4,
+    "executable": [ "pgzrun", "/Users/timjuic/Desktop/hologameV/GamePicker/GameFiles/soccer/soccer.py" ],
+    "toggles": ["UP", "DOWN", "LEFT", "RIGHT"],
+    "taps": ["SELECT", "START", "A", "B"],
+    "controls": [
+        {
+            "UP": "up",
+            "DOWN": "down",
+            "LEFT": "left",
+            "RIGHT": "right",
+            "SELECT": "esc",
+            "START": "enter",
+            "A": "space",
+            "B": "enter"
+        },
+         {
+            "UP": "up",
+            "DOWN": "down",
+            "LEFT": "left",
+            "RIGHT": "right",
+            "SELECT": "esc",
+            "START": "enter",
+            "A": "space",
+            "B": "enter"
+        },
+         {
+            "UP": "up",
+            "DOWN": "down",
+            "LEFT": "left",
+            "RIGHT": "right",
+            "SELECT": "esc",
+            "START": "enter",
+            "A": "space",
+            "B": "enter"
+        },
+         {
+            "UP": "up",
+            "DOWN": "down",
+            "LEFT": "left",
+            "RIGHT": "right",
+            "SELECT": "esc",
+            "START": "enter",
+            "A": "space",
+            "B": "enter"
+        }
+    ]
+}
+
+
 mainPage = {
-    "players": 1,
+    "players": 4,
     'toggles': ['UP', 'DOWN', 'LEFT', 'RIGHT'],
     'taps': ['SELECT', 'START', 'A', 'B'],
     "controls": [
@@ -57,8 +108,16 @@ mainPage = {
             'RIGHT': 'right',
             'START': 'enter',
             'B': 'enter'
+        },
+         {
+            'UP': 'up',
+            'DOWN': 'down',
+            'LEFT': 'left',
+            'RIGHT': 'right',
+            'START': 'enter',
+            'B': 'enter'
         }
     ]
 }
 
-GAMES = { "abe":abe , "bunner":bunner, "mainPage":mainPage}
+GAMES = { "abe":abe , "bunner":bunner, "mainPage":mainPage, "soccer": soccer}
