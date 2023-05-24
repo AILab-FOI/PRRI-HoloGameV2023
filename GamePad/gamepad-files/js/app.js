@@ -15,11 +15,10 @@ btnChangeBackground.addEventListener('click', function() {
    bodyElement.style.backgroundImage = `url(${bgFolder}/${backgroundsImageNames[imageCounter]})`
 })
 
-
-
 var ws = io();
 	ws.on('connect', function() {
             console.log( 'Connected to server!' );
+			startTimeout(600)
 	});
 	ws.on('error', function( msg ){
 	    console.log( msg );
@@ -28,6 +27,9 @@ var ws = io();
 	    alert('Game finished!');
 	    window.location.href = "/start";
 	});
+	ws.on('redirect', function(location){
+		window.location.href = location
+	})
 	
 	function send( ctrl, context )
 	{
@@ -62,6 +64,20 @@ var ws = io();
 	    }
 	});
 
+var connection_timer;
+
+function startTimeout(seconds){
+	if(connection_timer != null){
+		clearTimeout(connection_timer);
+	}
+	connection_timer = setTimeout(timedOut, seconds * 1000);
+}
+
+function timedOut(){
+	ws.disconnect();
+	window.location.href = "/timed-out";
+}
+	
 console.log(allButtonElements);
 allButtonElements.forEach(btnElement => {
    'mousedown touchstart'.split(' ').forEach(eventName => {
@@ -89,6 +105,7 @@ allButtonElements.forEach(btnElement => {
          if(event.handled !== true) {
             send( $( this ).attr('alt'), 'stop' );
             console.log( 'generic', $( this ).attr('alt'), 'stop' );
+			startTimeout(30)
             event.handled = true;
          } else {
             return false;
