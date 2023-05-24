@@ -21,7 +21,7 @@ PLAYERS = 0
 GAME_STARTED = False
 GAME_NAME = "mainPage"
 
-GAME
+GAME = GAMES[ GAME_NAME ]
 
 # A set to keep track of connected clients
 connected_clients = set()
@@ -104,23 +104,23 @@ def handle_game_clicked(game_name):
    GAME_STARTED = True
    return
 
-@socketio.on("game-started")
-def handle_game_clicked(game_name):
-   global GAME_NAME
-   print(f"Game clicked: {game_name}")
-   GAME_NAME = game_name
-   GAME = GAMES[ game_name ] # setting current game
-   print("SET GAME TO", GAME_NAME)
+# @socketio.on("game-started")
+# def handle_game_clicked(game_name):
+#    global GAME_NAME
+#    print(f"Game clicked: {game_name}")
+#    GAME_NAME = game_name
+#    GAME = GAMES[ game_name ] # setting current game
+#    print("SET GAME TO", GAME_NAME)
 
-   global GAME_STARTED
-   def game_exit_callback():
-        GAME_STARTED = False
-        print( 'Game finished! Asking clients to stop.' )
-        socketio.server.emit( 'stop', broadcast=True ) # TODO: Not working for some reason!
-        print( 'Done!' )
-   popenAndCall( lambda: game_exit_callback(), *GAME[ 'executable' ] )
-   GAME_STARTED = True
-   return
+#    global GAME_STARTED
+#    def game_exit_callback():
+#         GAME_STARTED = False
+#         print( 'Game finished! Asking clients to stop.' )
+#         socketio.server.emit( 'stop', broadcast=True ) # TODO: Not working for some reason!
+#         print( 'Done!' )
+#    popenAndCall( lambda: game_exit_callback(), *GAME[ 'executable' ] )
+#    GAME_STARTED = True
+#    return
 
 @socketio.on( 'ctrl' )
 def handle_message( message ):
@@ -179,20 +179,6 @@ def run_game():
     popenAndCall( lambda: game_exit_callback(), *GAME[ 'executable' ] )
     GAME_STARTED = True
     return render_template( 'ctrl.html', game= value)
-# # Route for games
-# @app.route( '/' )
-# def run_game():
-#     value = request.args.get('param'); # catching game name from url
-#     GAME = GAMES[ value ] # find game in dictionary
-#     global GAME_STARTED
-#     def game_exit_callback():
-#         GAME_STARTED = False
-#         print( 'Game finished! Asking clients to stop.' )
-#         socketio.server.emit( 'stop', broadcast=True ) # TODO: Not working for some reason!
-#         print( 'Done!' )
-#     popenAndCall( lambda: game_exit_callback(), *GAME[ 'executable' ] )
-#     GAME_STARTED = True
-#     return
 
 # Route for serving the start button
 @app.route( '/start' )
