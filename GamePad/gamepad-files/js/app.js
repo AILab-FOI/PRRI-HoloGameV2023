@@ -6,6 +6,7 @@ const allButtonElements = document.querySelectorAll('.btn')
 const bgFolder = '/gamepad-files/images/pozadina'
 const backgroundsImageNames = ['plava.png', 'crvena.png', 'roza.png', 'siva.png', 'zelena.png']
 let images = []
+let gamepadHash = localStorage.getItem('gamepad-hash')
 
 console.log('changes');
 let imageCounter = 0
@@ -17,19 +18,33 @@ btnChangeBackground.addEventListener('click', function() {
 
 var ws = io();
 	ws.on('connect', function() {
-            console.log( 'Connected to server!' );
+         console.log( 'Connected to server!' );
 			startTimeout(600)
 	});
+
 	ws.on('error', function( msg ){
 	    console.log( msg );
 	});
+
 	ws.on('stop', function(){
 	    alert('Game finished!');
 	    window.location.href = "/start";
 	});
-	ws.on('redirect', function(location){
-		window.location.href = location
+
+   ws.on('reportBack', function(){
+		if (gamepadHash === null) {
+         gamepadHash = Date.now()
+         localStorage.setItem('gamepad-hash', gamepadHash);
+      } else {
+         gamepadHash = localStorage.getItem('gamepad-hash')
+      }
+
+      console.log("Gamepad hash is:", gamepadHash);
+
+		ws.emit('present', (""+gamepadHash));
 	})
+
+
 	
 	function send( ctrl, context )
 	{
@@ -74,9 +89,17 @@ function startTimeout(seconds){
 }
 
 function timedOut(){
-	ws.disconnect();
+   localStorage.clear();
 	window.location.href = "/timed-out";
 }
+
+
+function onBeforeUnload(e) {
+   e.preventDefault()
+   localStorage.clear();
+}
+
+window.addEventListener('beforeunload', onBeforeUnload);
 	
 console.log(allButtonElements);
 allButtonElements.forEach(btnElement => {
@@ -105,7 +128,7 @@ allButtonElements.forEach(btnElement => {
          if(event.handled !== true) {
             send( $( this ).attr('alt'), 'stop' );
             console.log( 'generic', $( this ).attr('alt'), 'stop' );
-			startTimeout(30)
+			startTimeout(5)
             event.handled = true;
          } else {
             return false;

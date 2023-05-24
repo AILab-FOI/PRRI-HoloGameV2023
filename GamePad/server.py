@@ -7,11 +7,12 @@ import json
 import pyautogui
 import subprocess
 import threading
+import time
 
 from config import GAMES
 
 ADDR_OUT = '0.0.0.0'
-PORT = 5001
+PORT = 5002
 
 app = Flask(__name__)
 app.config[ 'SECRET_KEY' ] = 'VelikaTajna321!'
@@ -22,13 +23,18 @@ GAME_STARTED = False
 GAME_NAME = "mainPage"
 
 GAME = GAMES[ GAME_NAME ]
+REPORT_BACK_TIMER = 3
+
+timer_running = False  # Flag variable to track the timer status
+timer_thread = None  # Variable to hold the timer thread
 
 # A set to keep track of connected clients
-connected_clients = set()
-
-active_players = set()
-
+connected_clients = []
+# active_players = set()
 player_waiting_queue = []
+reported_back_gamepads = []
+# start_time = 0
+
 
 def popenAndCall( onExit, *popenArgs ):
     """
@@ -50,19 +56,26 @@ def popenAndCall( onExit, *popenArgs ):
     # returns immediately after the thread starts
     return thread
 
-def addPlayer(sid):
-    global PLAYERS, GAME, GAME_STARTED
-    connected_clients.add( sid )
-    max_players = GAME[ "players" ]
-    if not GAME_STARTED:
-        max_players = 1
+def addPlayer(gamepad_hash):
+    global PLAYERS, GAME_NAME, GAME_STARTED, connected_clients
 
-    if PLAYERS + 1 > GAME[ "players" ]:
-        player_waiting_queue.append(sid)
-        sid.emit("redirect", "/waiting_queue")
-    else:
-        PLAYERS += 1
-        active_players.add(sid)
+    if gamepad_hash in connected_clients: return;    
+
+    connected_clients.append( gamepad_hash )
+    connected_clients.sort()
+    added_player_index = connected_clients.index(gamepad_hash)
+    PLAYERS = len(connected_clients)
+
+    print("PLAYER", gamepad_hash, " IS ", added_player_index)
+
+    if added_player_index + 1 > GAMES [ GAME_NAME ] [ "players" ]:
+        print("Too many players, adding player to waiting queue")
+        player_waiting_queue.append(gamepad_hash)
+      #   sid.emit("redirect", "/waiting_queue")
+        render_template( 'timed_out.html',game = 'mainPage' )
+   #  else:
+   #      PLAYERS += 1
+   #      active_players.add(gamepad_hash)
 
 
 def removeFromCollections(sid):
@@ -76,15 +89,67 @@ def removeFromCollections(sid):
     connected_clients.remove(sid)
 
 
+def compare_lists(connected_client_hashes, reported_back_hashes):
+    unique_elements = []
+
+    # Check elements in list1 that are not in list2
+    for element in connected_client_hashes:
+        if element not in reported_back_hashes:
+            unique_elements.append(element)
+    return unique_elements
+
+def timer_callback():
+    print("Timer ended!")
+    global timer_running, connected_clients, reported_back_gamepads
+    clients_to_remove = compare_lists(connected_clients, reported_back_gamepads)
+    for client_hash in clients_to_remove:
+        print("Removing client: ", client_hash)
+        connected_clients.remove(client_hash)
+    timer_running = False
+
+def start_timer(duration, callback):
+    print("TIMER STARTING")
+    global timer_running, timer_thread, reported_back_gamepads, connected_clients
+    time.sleep(duration)
+    callback()
+
+
 @socketio.on( 'connect' )
 def connect():
     print( 'Client connected:', request.sid )
-    addPlayer(request.sid)
+    global PLAYERS, timer_thread, timer_running
+    PLAYERS = 0
+
+    reported_back_gamepads.clear()
+
+    
+    if timer_running:
+        print("TIMER ALREADY EXISTS, WAITING...")
+        timer_thread.join()
+
+    timer_thread = threading.Thread(target=start_timer, args=(REPORT_BACK_TIMER, timer_callback))
+    timer_thread.start()
+    timer_running = True
+    socketio.emit('reportBack')
+
+
+@socketio.on('present')
+def addPlayer1(gamepad_hash):
+    global PLAYERS, reported_back_gamepads
+    addPlayer(gamepad_hash)
+    reported_back_gamepads.append(gamepad_hash)
+    print("PLAYER ADDED:"     , PLAYERS, gamepad_hash)
 
 @socketio.on( 'disconnect' )
 def disconnect():
     print( 'Client disconnected:', request.sid )
-    removeFromCollections(request.sid)
+    socketio.emit('reportBack')
+
+# @socketio.on( 'client-timeout' )
+# def timeout(gamepad_hash):
+#     print( 'Client timed out:', gamepad_hash )
+#     removeFromCollections(gamepad_hash)
+
 
 @socketio.on("game-started")
 def handle_game_clicked(game_name):
@@ -195,11 +260,11 @@ def show_gamepad():
 #     return render_template( '../GamePicker/index.html',game = 'mainPage' )
 
 # Route for disconnecting timed out players
-app.route( '/timed-out' )
+@app.route( '/timed-out' )
 def serve_timed_out():
     return render_template( 'timed_out.html' )
 
-app.route('/waiting_queue')
+@app.route('/waiting_queue')
 def serve_waiting_queue():
     return render_template('waiting_queue')
 
@@ -220,4 +285,4 @@ def serve_gamepicker( path ):
 
 if __name__ == '__main__':
     print( 'Starting server ...' )
-    socketio.run( app, host='0.0.0.0', port=5001 )
+    socketio.run( app, host='0.0.0.0', port=5002 )
