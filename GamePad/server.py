@@ -64,6 +64,24 @@ def popenAndCall( onExit, *popenArgs ):
     # returns immediately after the thread starts
     return thread
 
+def background_thread_check_sensor():
+    while True:
+        global count
+        time.sleep(5)
+        if sendSignal() == True:
+            global cameraSignal
+            print("Emitting for camera..." + str(cameraSignal))
+            socketio.emit('startCamera', {'message': 'Server generated event'}, namespace='/')
+            cameraSignal = False
+ 
+def sendSignal():
+    return cameraSignal
+ 
+def motiondetect(test=None):
+    global cameraSignal
+    if (cameraSignal == False):
+        cameraSignal = True
+
 def addPlayer(gamepad_hash):
     global PLAYERS, GAME_NAME, GAME_STARTED, connected_clients
 
