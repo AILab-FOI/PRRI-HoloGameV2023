@@ -274,6 +274,9 @@ def run_game():
 # Route for serving the start button
 @app.route( '/start' )
 def start():
+    Cthread = Thread(target=background_thread)
+    Cthread.daemon = True
+    Cthread.start()
     return render_template( 'index.html',game = 'mainPage' )
 
 @app.route( '/gamepad' )
