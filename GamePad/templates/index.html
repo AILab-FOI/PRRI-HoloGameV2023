@@ -1,42 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-   <meta charset="UTF-8">
-   <link rel="stylesheet" href="/gamepicker-files/style.css">
-   <script src="/gamepad-files/js/socket.io.min.js" crossorigin="anonymous"></script>
-   <script defer src="/gamepicker-files/app.js" type="module"></script>
-   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Odabir igre</title>
-</head>
-<body>
-   <div class="picker-container">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="/gamepicker-files/style.css" />
+    <script
+      src="/gamepad-files/js/socket.io.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script defer src="/gamepicker-files/app.js" type="module"></script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Odabir igre</title>
+
+    <!--<button type='button' onclick='init()'>Start</button>-->
+    <div><canvas id="canvas"></canvas></div>
+    <div id="label-container"></div>
+    <script src="../js/socket.io.min.js" crossorigin="anonymous"></script>
+    <script src="../js/tf.min.js"></script>
+    <script src="../js/teachablemachine-pose.min.js"></script>
+    <script src="../js/gestures.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div class="picker-container">
       <div class="picker-content">
-         <div class="top">
-            <div class="foi"></div>
-         </div>
+        <div class="top">
+          <div class="foi"></div>
+        </div>
 
-         <div class="main">
-            <button class="left-arrow clickable-button"></button>
-            <div class="games-container">
-              <button class="game clickable-button" data-name=""></button>
-              <button class="game clickable-button" data-name=""></button>
-              <button class="game clickable-button" data-name=""></button>
-              <button class="game clickable-button" data-name=""></button>
-              <button class="game clickable-button" data-name=""></button>
-              <button class="game clickable-button" data-name=""></button>
-            </div>
-            <button class="right-arrow clickable-button"></button>
-         </div>
+        <div class="main">
+          <button class="left-arrow clickable-button"></button>
+          <div class="games-container">
+            <button class="game clickable-button" data-name=""></button>
+            <button class="game clickable-button" data-name=""></button>
+            <button class="game clickable-button" data-name=""></button>
+            <button class="game clickable-button" data-name=""></button>
+            <button class="game clickable-button" data-name=""></button>
+            <button class="game clickable-button" data-name=""></button>
+          </div>
+          <button class="right-arrow clickable-button"></button>
+        </div>
 
-         <div class="bottom">
-            <div class="hologame">
-               <div class="controller-left controller"></div>
-               <div class="controller-right controller"></div>
-            </div>
-         </div>
+        <div class="bottom">
+          <div class="hologame">
+            <div class="controller-left controller"></div>
+            <div class="controller-right controller"></div>
+          </div>
+        </div>
       </div>
-      
-   </div>
-</body>
+    </div>
+  </body>
 </html>
