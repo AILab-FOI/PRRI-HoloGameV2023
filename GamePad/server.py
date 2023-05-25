@@ -7,7 +7,9 @@ import json
 import pyautogui
 import subprocess
 import threading
+from threading import Thread
 import time
+import random
 import RPi.GPIO as GPIO
 GPIO.setmode( GPIO.BCM )
 PIR_PIN = 21
