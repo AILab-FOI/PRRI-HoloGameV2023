@@ -20,7 +20,11 @@ PORT = 5002
 
 app = Flask(__name__)
 app.config[ 'SECRET_KEY' ] = 'VelikaTajna321!'
-socketio = SocketIO( app, cors_allowed_origins="*" )
+socketio = SocketIO( app, cors_allowed_origins="*", async_mode='eventlet')
+import eventlet
+eventlet.monkey_patch()
+
+cameraSignal = False
 
 PLAYERS = 0
 GAME_STARTED = False
