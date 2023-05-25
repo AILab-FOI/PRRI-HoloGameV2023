@@ -314,4 +314,5 @@ def serve_gamepicker( path ):
 
 if __name__ == '__main__':
     print( 'Starting server ...' )
+    GPIO.add_event_detect(PIR_PIN, GPIO.RISING, callback=motiondetect)
     socketio.run( app, host='0.0.0.0', port=5002 )
