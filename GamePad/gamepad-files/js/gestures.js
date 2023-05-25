@@ -9,7 +9,7 @@ addEventListener("load", (event) => {
   init();
 });
 
-const URL = "../js/model/"; //also uploaded here: https://teachablemachine.withgoogle.com/models/YKa_Xozvs
+const URL = "../gamepad-files/js/model/"; //also uploaded here: https://teachablemachine.withgoogle.com/models/YKa_Xozvs
 let model, webcam, ctx, labelContainer, maxPredictions;
 let gestures = {
   Neutral: "Neutral",
