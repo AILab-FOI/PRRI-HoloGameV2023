@@ -7,6 +7,10 @@ const bgFolder = '/gamepad-files/images/pozadina'
 const backgroundsImageNames = ['plava.png', 'crvena.png', 'roza.png', 'siva.png', 'zelena.png']
 let images = []
 let gamepadHash = localStorage.getItem('gamepad-hash')
+if (gamepadHash === null) {
+	gamepadHash = ""+Date.now()
+	localStorage.setItem('gamepad-hash', gamepadHash)
+}
 
 console.log('changes');
 let imageCounter = 0
@@ -17,7 +21,9 @@ btnChangeBackground.addEventListener('click', function() {
 })
 
 var ws = io();
+
 	ws.on('connect', function() {
+		ws.emit('add-player', gamepadHash);
          console.log( 'Connected to server!' );
 			startTimeout(600)
 	});
@@ -48,7 +54,7 @@ var ws = io();
 	
 	function send( ctrl, context )
 	{
-	    ws.emit( 'ctrl', { data: JSON.stringify( { "cmd":ctrl, "context":context } ) } );
+	    ws.emit( 'ctrl', { data: JSON.stringify( { "cmd":ctrl, "context":context, "clientHash": gamepadHash } ) } );
 	}
 	
 	$('.cbutton').on( 'mousedown touchstart', function( event ){
@@ -89,7 +95,7 @@ function startTimeout(seconds){
 }
 
 function timedOut(){
-   localStorage.clear();
+//    localStorage.clear();
 	window.location.href = "/timed-out";
 }
 
@@ -99,7 +105,7 @@ function onBeforeUnload(e) {
    localStorage.clear();
 }
 
-window.addEventListener('beforeunload', onBeforeUnload);
+// window.addEventListener('unload', onBeforeUnload);
 	
 console.log(allButtonElements);
 allButtonElements.forEach(btnElement => {
