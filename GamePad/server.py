@@ -8,6 +8,10 @@ import pyautogui
 import subprocess
 import threading
 import time
+import RPi.GPIO as GPIO
+GPIO.setmode( GPIO.BCM )
+PIR_PIN = 21
+GPIO.setup( PIR_PIN, GPIO.IN )
 
 from config import GAMES
 
