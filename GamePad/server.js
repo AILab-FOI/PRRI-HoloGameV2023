@@ -2,15 +2,31 @@ const express = require('express');
 const { Server } = require('socket.io');
 const path = require('path');
 const robot = require("robotjs")
+const os = require('os');
 // const { exec } = require('child_process');
 const app = express();
+var socketGlobal;
 
 app.use(express.static('gamepad-files'));
 app.use(express.static('gamepicker-files'));
 const server = app.listen(5002, '0.0.0.0', () => {
-  console.log('Server running on port 5002');
+  const interfaces = os.networkInterfaces();
+  for (const iface of Object.values(interfaces)) {
+    for (const network of iface) {
+      if (network.family === 'IPv4' && !network.internal) {
+        console.log(`Server running on ${network.address}:${server.address().port}`);
+        console.log(`Controller: http://${network.address}:${server.address().port}/gamepad`);
+        console.log(`Game Picker: http://${network.address}:${server.address().port}/start`);
+        break;
+      }
+    }
+  }
 });
-const io = new Server(server);
+
+const io = new Server(server, {
+   pingInterval: 60000,  // Send a ping every 25 seconds
+   pingTimeout: 120000,   // Wait 60 seconds for a response
+ });
 const GAMES = require('./config.js');
 const Player = require('./player.js');
 
@@ -18,56 +34,12 @@ let totalPlayers = 0;
 let GAME_STARTED = false;
 let GAME_NAME = 'mainPage';
 let GAME = GAMES[GAME_NAME];;
-let reportBackTimer = null; // Timeout handle for the timer
 
 // A set to keep track of connected clients
 const connectedClients = {}
-const playerWaitingQueue = [];
-let reportedBackGamepads = []
-
-// function addPlayer(gamepadHash) {
-//   if (connectedClients.has(gamepadHash)) return;
-
-//   connectedClients.add(gamepadHash);
-//   const addedPlayerIndex = Array.from(connectedClients).sort().indexOf(gamepadHash);
-//   PLAYERS = connectedClients.length;
-
-//   console.log('PLAYER', gamepadHash, ' IS ', addedPlayerIndex);
-
-//   if (addedPlayerIndex + 1 > GAMES[GAME_NAME].players) {
-//     console.log('Too many players, adding player to waiting queue');
-//     playerWaitingQueue.push(gamepadHash);
-
-//     // SEND A PLAYER WAITING QUEUE PAGE HERE
-//     // res.redirect('/waiting_queue');
-//     // render_template('timed_out.html', game = 'mainPage');
-//   }
-// }
-
-// function removeFromCollections(sid) {
-//   if (connectedClients.has(sid)) {
-//     connectedClients.delete(sid);
-//     connectedClients.add(playerWaitingQueue.shift());
-//   } else {
-//     PLAYERS--;
-//     playerWaitingQueue.splice(playerWaitingQueue.indexOf(sid), 1);
-//   }
-// }
-
-function compareLists(list1, list2) {
-  const uniqueElements = [];
-
-  for (const element of list1) {
-    if (!list2.has(element)) {
-      uniqueElements.push(element);
-    }
-  }
-
-  return uniqueElements;
-}
 
 
-function removePlayerAndUpdateQueue(playerToDisconnect) {
+function removePlayerAndUpdateQueue(playerToDisconnect, socket) {
     console.log("player disconnect method called");
     Array.from(Object.values(connectedClients)).map(player => {
         if (player.getNumber() > playerToDisconnect.getNumber()) player.moveForwardInQueue()
@@ -77,43 +49,60 @@ function removePlayerAndUpdateQueue(playerToDisconnect) {
     totalPlayers--;
     console.log("Disconnected player:", playerToDisconnect.getHash(), playerToDisconnect.getNumber() );
     console.log("there are currently " + Array.from(Object.values(connectedClients)).length + " connected clients")
+
+    let maximumPlayers = GAMES[GAME_NAME].players;
+
+    if (Array.from(Object.values(connectedClients)).length === 0) {
+      console.log('Last player disconnected, and there are no players in queue');
+      return;
+    }
+
+    let playerToRemoveFromQueue = Array.from(Object.values(connectedClients)).find(player => player.getNumber() === maximumPlayers)
+    if (!playerToRemoveFromQueue) return;
+
+    console.log("emmiting unqueue event");
+    io.emit('unqueue', playerToRemoveFromQueue.getHash())
 }
 
+
 io.on('connection', (socket) => {
+   socketGlobal = socket;
   console.log('Client connected:', socket.id);
 
+  socket.on("disconnect", (reason) => {
+   console.log("disconnected:", reason);
+   socket.conn.transport.doClose = false;
+   
+   // socket.connect();
+ });
 
   socket.on("add-player", playerHash => {
     console.log("ADD PLAYER CALLED", playerHash);
+    let maximumPlayers = GAMES[GAME_NAME].players;
+
     if (!connectedClients[playerHash]) {
+      console.log("upper");
         let newPlayer = new Player(playerHash, ++totalPlayers);
         connectedClients[playerHash] = newPlayer
+        console.log("there are currently " + Array.from(Object.values(connectedClients)).length + " connected clients")
 
-        let maximumPlayers = GAMES[GAME_NAME].players;
         // totalPlayers is in this case the number of player added
         if (totalPlayers > maximumPlayers) {
             socket.emit('queue', maximumPlayers - totalPlayers)
             return;
         }
         console.log(newPlayer);
-        newPlayer.startDisconnectTimer(removePlayerAndUpdateQueue)
+        newPlayer.startDisconnectTimer(removePlayerAndUpdateQueue, socket)
 
-        console.log("there are currently " + Array.from(Object.values(connectedClients)).length + " connected clients")
+    } else {
+      console.log("bottom case");
+      playerRequested = connectedClients[playerHash]
+      if (playerRequested.isInQueue(maximumPlayers)) {
+         socket.emit('queue', maximumPlayers - totalPlayers)
+         return;
+     }
     }
   })
-
-//   socket.on('remove-player', playerHash => {
-//     console.log('REMOVE PLAYER CALLED', playerHash);
-//     if (!connectedClients[playerHash]) {
-//         console.log("Player is already disconnected");
-//         return;
-//     }
-//     let disconnectedPlayer = connectedClients[playerHash];
-//     console.log(disconnectedPlayer);
-//     let disconnectedPlayerNumber = disconnectedPlayer.getNumber();
-//     removePlayerAndUpdateQueue(disconnectedPlayer)
-//     console.log("there are currently " + Array.from(Object.values(connectedClients)).length + " connected clients")
-//   })
 
   socket.on('ctrl', (message) => {
     message = JSON.parse(message.data)
@@ -150,35 +139,6 @@ io.on('connection', (socket) => {
     let currentPlayer = connectedClients[clientHash]
     currentPlayer.startDisconnectTimer(removePlayerAndUpdateQueue)
   });
-
-//   io.on('present', (gamepadHash) => {
-//     addPlayer(gamepadHash);
-//     reportedBackGamepads.add(gamepadHash);
-//     console.log('PLAYER ADDED:', PLAYERS, gamepadHash);
-//   });
-
-//   io.on('game-started', (gameName) => {
-//     console.log(`Game clicked: ${gameName}`);
-//     GAME_NAME = gameName;
-//     GAME = GAMES[gameName];
-//     console.log('SET GAME TO', GAME_NAME);
-
-//     function gameExitCallback() {
-//         GAME_STARTED = false;
-//         console.log('Game finished! Asking clients to stop.');
-//         io.emit('stop');
-//         console.log('Done!');
-//     }
-
-//     exec(GAME.executable.join(' '), (error) => {
-//         if (error) {
-//         console.error('Error while executing game:', error);
-//         } else {
-//         GAME_STARTED = true;
-//         gameExitCallback();
-//         }
-//     });
-//   });
 })
 
 

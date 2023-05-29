@@ -42,6 +42,10 @@ var ws = io();
 		window.location.href = '/queue'
 	})
 
+   ws.on('unqueue', function() {
+		console.log("GOT UNQUEUE");
+	})
+
 //    ws.on('reportBack', function(){
 // 		if (gamepadHash === null) {
 //          gamepadHash = Date.now()

@@ -4,11 +4,11 @@ module.exports = class Player {
     constructor(clientHash, playerNumber) {
         this.clientHash = clientHash
         this.playerNumber = playerNumber
-        this.lastPressedControl
         this.disconnectTimer = null;
     }
 
     isInQueue(maxPlayers) {
+      console.log("is this in queue", this.playerNumber);
         return this.playerNumber < maxPlayers;
     }
 
@@ -24,12 +24,12 @@ module.exports = class Player {
         this.playerNumber--;
     }
 
-    startDisconnectTimer(callback) {
+    startDisconnectTimer(callback, socket) {
         if (this.disconnectTimer !== null) {
             clearTimeout(this.disconnectTimer)
         }
         this.disconnectTimer = setTimeout(() => {
-            callback(this)
+            callback(this, socket)
         }, DISCONNECT_SECONDS * 1000);
     }
 }

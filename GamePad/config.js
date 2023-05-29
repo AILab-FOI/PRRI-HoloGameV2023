@@ -92,7 +92,7 @@ const abe = {
   };
   
   const mainPage = {
-    players: 1,
+    players: 2,
     toggles: ['UP', 'DOWN', 'LEFT', 'RIGHT'],
     taps: ['SELECT', 'START', 'A', 'B'],
     controls: [
