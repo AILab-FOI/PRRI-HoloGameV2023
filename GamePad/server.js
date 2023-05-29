@@ -88,6 +88,13 @@ io.on('connection', (socket) => {
     if (!connectedClients[playerHash]) {
         let newPlayer = new Player(playerHash, ++totalPlayers);
         connectedClients[playerHash] = newPlayer
+
+        let maximumPlayers = GAMES[GAME_NAME].players;
+        // totalPlayers is in this case the number of player added
+        if (totalPlayers > maximumPlayers) {
+            socket.emit('queue', maximumPlayers - totalPlayers)
+            return;
+        }
         console.log(newPlayer);
         newPlayer.startDisconnectTimer(removePlayerAndUpdateQueue)
 
@@ -116,7 +123,7 @@ io.on('connection', (socket) => {
         console.log("Not existing player tried to use controls. Ignoring them");
         return;
     }
-    
+
     console.log('ctrl', message);
 
     let currentGame = GAMES[GAME_NAME];
@@ -215,9 +222,10 @@ app.get('/timed-out', (req, res) => {
     res.sendFile(filePath, { game: 'mainPage' });
 });
 
-// app.get('/waiting_queue', (req, res) => {
-//   res.render('waiting_queue');
-// });
+app.get('/queue', (req, res) => {
+    const filePath = path.join(__dirname, '/templates/waiting_queue.html');
+    res.sendFile(filePath, { game: 'mainPage' });
+});
 
 // Routes for serving static files
 app.use('/gamepad-files', express.static('gamepad-files'));

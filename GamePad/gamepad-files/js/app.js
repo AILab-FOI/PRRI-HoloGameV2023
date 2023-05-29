@@ -36,6 +36,10 @@ var ws = io();
 	    window.location.href = "/start";
 	});
 
+	ws.on('queue', function(queueNumber) {
+		window.location.href = '/queue'
+	})
+
 //    ws.on('reportBack', function(){
 // 		if (gamepadHash === null) {
 //          gamepadHash = Date.now()
