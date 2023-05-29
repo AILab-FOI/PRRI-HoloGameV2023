@@ -1,4 +1,4 @@
-const DISCONNECT_SECONDS = 5
+const DISCONNECT_SECONDS = 20
 
 module.exports = class Player {
     constructor(clientHash, playerNumber) {

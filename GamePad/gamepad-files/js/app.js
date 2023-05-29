@@ -5,6 +5,8 @@ const allButtonElements = document.querySelectorAll('.btn')
 
 const bgFolder = '/gamepad-files/images/pozadina'
 const backgroundsImageNames = ['plava.png', 'crvena.png', 'roza.png', 'siva.png', 'zelena.png']
+const AFTER_PRESS_TIMEOUT_SECONDS = 20;
+const INITIAL_TIMEOUT_SECONDS = 20
 let images = []
 let gamepadHash = localStorage.getItem('gamepad-hash')
 if (gamepadHash === null) {
@@ -24,7 +26,7 @@ var ws = io();
 	ws.on('connect', function() {
 		ws.emit('add-player', gamepadHash);
          console.log( 'Connected to server!' );
-			startTimeout(20)
+			startTimeout(INITIAL_TIMEOUT_SECONDS)
 	});
 
 	ws.on('error', function( msg ){
@@ -141,7 +143,7 @@ allButtonElements.forEach(btnElement => {
          if(event.handled !== true) {
             send( $( this ).attr('alt'), 'stop' );
             console.log( 'generic', $( this ).attr('alt'), 'stop' );
-			startTimeout(5)
+			startTimeout(AFTER_PRESS_TIMEOUT_SECONDS)
             event.handled = true;
          } else {
             return false;

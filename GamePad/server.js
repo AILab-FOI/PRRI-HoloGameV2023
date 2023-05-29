@@ -124,14 +124,20 @@ io.on('connection', (socket) => {
         return;
     }
 
-    console.log('ctrl', message);
-
     let currentGame = GAMES[GAME_NAME];
     let playerNumber = connectedClients[clientHash].getNumber()
-    console.log("Player index is: ", playerNumber);
+    let maximumPlayers = currentGame.players;
+    if (playerNumber > maximumPlayers) {
+        console.log(`Player in queue (${playerNumber - maximumPlayers} in queue) tried to use controls. Ignoring them`);
+        return;
+    }
+
+    console.log('ctrl', message);
+
+    
+    console.log("Pressed player number: ", playerNumber);
     let pressedControl = currentGame.controls[playerNumber - 1][cmd]
     if (!pressedControl) return
-    console.log("pressedControl", pressedControl);
 
     if (currentGame.toggles.includes(cmd)) {
         if (context == "start") robot.keyToggle(pressedControl, "down");
@@ -143,15 +149,6 @@ io.on('connection', (socket) => {
 
     let currentPlayer = connectedClients[clientHash]
     currentPlayer.startDisconnectTimer(removePlayerAndUpdateQueue)
-
-
-    const game = GAME_NAME;
-
-    if (totalPlayers > GAMES[game].players) {
-        console.log('Too many players! Player', totalPlayers);
-        socket.emit('error', { message: 'Too many players already connected for this game.' });
-        return;
-    }
   });
 
 //   io.on('present', (gamepadHash) => {
