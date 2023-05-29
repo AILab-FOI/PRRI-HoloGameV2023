@@ -65,34 +65,6 @@ var ws = io();
 	{
 	    ws.emit( 'ctrl', { data: JSON.stringify( { "cmd":ctrl, "context":context, "clientHash": gamepadHash } ) } );
 	}
-	
-	// $('.cbutton').on( 'mousedown touchstart', function( event ){
-	//     //event.stopPropagation();
-	//     event.preventDefault();
-	//     if(event.handled !== true) {
-		
-	// 	send( $( this ).attr('alt'), 'start' );
-	// 	console.log( 'generic', $( this ).attr('alt'), 'start' );
-	// 	navigator.vibrate(100); 
-		
-	// 	event.handled = true;
-	//     } else {
-	// 	return false;
-	//     }
-	// });
-	
-	// $('.cbutton').on( 'mouseup touchend touchcancel', function( event ){
-	//     //event.stopPropagation();
-	//     event.preventDefault();
-	//     if(event.handled !== true) {
-	// 	   send( $( this ).attr('alt'), 'stop' );
-	// 	   console.log( 'generic', $( this ).attr('alt'), 'stop' );
-		
-	// 	   event.handled = true;
-	//     } else {
-	// 	   return false;
-	//     }
-	// });
 
 var connection_timer;
 

@@ -3,7 +3,7 @@ const { Server } = require('socket.io');
 const path = require('path');
 const robot = require("robotjs")
 const os = require('os');
-// const { exec } = require('child_process');
+const { exec, spawn } = require('child_process');
 const app = express();
 var socketGlobal;
 
@@ -29,6 +29,7 @@ const io = new Server(server, {
  });
 const GAMES = require('./config.js');
 const Player = require('./player.js');
+const { log } = require('console');
 
 let totalPlayers = 0;
 let GAME_STARTED = false;
@@ -69,12 +70,61 @@ io.on('connection', (socket) => {
    socketGlobal = socket;
   console.log('Client connected:', socket.id);
 
-  socket.on("disconnect", (reason) => {
-   console.log("disconnected:", reason);
-   socket.conn.transport.doClose = false;
+//   socket.on("disconnect", (reason) => {
+//    console.log("disconnected:", reason);
+//    socket.conn.transport.doClose = false;
    
-   // socket.connect();
- });
+//    // socket.connect();
+//  });
+
+   socket.on('game-started', gameName => {
+      if (!GAMES[gameName]) {
+         console.log(`Invalid gamename: ${gameName}`)
+         return
+      }
+
+      GAME_NAME = gameName
+      GAME = GAMES[gameName]
+
+   // // Start the game using the game's path
+   // var gameProcess = exec(GAME.executable[0], (error, stdout, stderr) => {
+   //    if (error) {
+   //    console.error(`Failed to start the game: ${error}`);
+   //    } else {
+   //    console.log("Game started");
+   //    }
+   // });
+      var gameProcess
+   if (GAME.path.endsWith('.py')) {
+      console.log('Its a python game');
+      gameProcess = spawn("python3", [GAME.path, "arg1", "arg2"]);
+   } else if (GAME.path.endsWith('cpp')) {
+      console.log("its a C++ game");
+      gameProcess = spawn(GAME.path);
+   }
+   // Start the Python game using the game's path and arguments
+  
+
+   // Handle game process output
+   gameProcess.stdout.on("data", (data) => {
+      console.log(`Game output: ${data}`);
+      // Handle game output here, e.g., send it to players, process it, etc.
+   });
+
+   // Handle game process error
+   gameProcess.stderr.on("data", (data) => {
+      console.error(`Game error: ${data}`);
+      // Handle game error here, e.g., log it, notify players, etc.
+   });
+
+   // Handle game process exit
+   gameProcess.on("exit", (code, signal) => {
+      console.log(`Game process exited with code ${code} and signal ${signal}`);
+      // Handle game process exit here, e.g., update game status, notify players, etc.
+   });
+
+
+   })
 
   socket.on("add-player", playerHash => {
     console.log("ADD PLAYER CALLED", playerHash);
@@ -133,7 +183,6 @@ io.on('connection', (socket) => {
         if (context == "stop") robot.keyToggle(pressedControl, "up");
     } else if (currentGame.taps.includes(cmd)) {
         if (context == "start") robot.keyTap(pressedControl);
-        
     }
 
     let currentPlayer = connectedClients[clientHash]
