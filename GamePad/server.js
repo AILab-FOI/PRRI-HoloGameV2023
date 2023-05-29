@@ -3,7 +3,6 @@ const { Server } = require('socket.io');
 const path = require('path');
 const robot = require("robotjs")
 // const { exec } = require('child_process');
-
 const app = express();
 
 app.use(express.static('gamepad-files'));
@@ -12,16 +11,13 @@ const server = app.listen(5002, '0.0.0.0', () => {
   console.log('Server running on port 5002');
 });
 const io = new Server(server);
-
 const GAMES = require('./config.js');
+const Player = require('./player.js');
 
 let totalPlayers = 0;
 let GAME_STARTED = false;
 let GAME_NAME = 'mainPage';
-
 let GAME = GAMES[GAME_NAME];;
-const REPORT_BACK_TIMER = 3;
-
 let reportBackTimer = null; // Timeout handle for the timer
 
 // A set to keep track of connected clients
@@ -29,34 +25,34 @@ const connectedClients = {}
 const playerWaitingQueue = [];
 let reportedBackGamepads = []
 
-function addPlayer(gamepadHash) {
-  if (connectedClients.has(gamepadHash)) return;
+// function addPlayer(gamepadHash) {
+//   if (connectedClients.has(gamepadHash)) return;
 
-  connectedClients.add(gamepadHash);
-  const addedPlayerIndex = Array.from(connectedClients).sort().indexOf(gamepadHash);
-  PLAYERS = connectedClients.length;
+//   connectedClients.add(gamepadHash);
+//   const addedPlayerIndex = Array.from(connectedClients).sort().indexOf(gamepadHash);
+//   PLAYERS = connectedClients.length;
 
-  console.log('PLAYER', gamepadHash, ' IS ', addedPlayerIndex);
+//   console.log('PLAYER', gamepadHash, ' IS ', addedPlayerIndex);
 
-  if (addedPlayerIndex + 1 > GAMES[GAME_NAME].players) {
-    console.log('Too many players, adding player to waiting queue');
-    playerWaitingQueue.push(gamepadHash);
+//   if (addedPlayerIndex + 1 > GAMES[GAME_NAME].players) {
+//     console.log('Too many players, adding player to waiting queue');
+//     playerWaitingQueue.push(gamepadHash);
 
-    // SEND A PLAYER WAITING QUEUE PAGE HERE
-    // res.redirect('/waiting_queue');
-    // render_template('timed_out.html', game = 'mainPage');
-  }
-}
+//     // SEND A PLAYER WAITING QUEUE PAGE HERE
+//     // res.redirect('/waiting_queue');
+//     // render_template('timed_out.html', game = 'mainPage');
+//   }
+// }
 
-function removeFromCollections(sid) {
-  if (connectedClients.has(sid)) {
-    connectedClients.delete(sid);
-    connectedClients.add(playerWaitingQueue.shift());
-  } else {
-    PLAYERS--;
-    playerWaitingQueue.splice(playerWaitingQueue.indexOf(sid), 1);
-  }
-}
+// function removeFromCollections(sid) {
+//   if (connectedClients.has(sid)) {
+//     connectedClients.delete(sid);
+//     connectedClients.add(playerWaitingQueue.shift());
+//   } else {
+//     PLAYERS--;
+//     playerWaitingQueue.splice(playerWaitingQueue.indexOf(sid), 1);
+//   }
+// }
 
 function compareLists(list1, list2) {
   const uniqueElements = [];
@@ -70,59 +66,63 @@ function compareLists(list1, list2) {
   return uniqueElements;
 }
 
-function timerCallback() {
-  console.log('Timer ended!');
-  const clientsToRemove = compareLists(connectedClients, reportedBackGamepads);
-  for (const clientHash of clientsToRemove) {
-    console.log('Removing client:', clientHash);
-    connectedClients.delete(clientHash);
-  }
-  timerRunning = false;
-}
 
-function startTimer(duration, callback) {
-  console.log('TIMER STARTING');
-  reportBackTimer = setTimeout(() => {
-    callback();
-  }, duration * 1000);
+function removePlayerAndUpdateQueue(playerToDisconnect) {
+    console.log("player disconnect method called");
+    Array.from(Object.values(connectedClients)).map(player => {
+        if (player.getNumber() > playerToDisconnect.getNumber()) player.moveForwardInQueue()
+        return player;
+    })
+    delete connectedClients[playerToDisconnect.getHash()]
+    totalPlayers--;
+    console.log("Disconnected player:", playerToDisconnect.getHash(), playerToDisconnect.getNumber() );
+    console.log("there are currently " + Array.from(Object.values(connectedClients)).length + " connected clients")
 }
 
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
-  PLAYERS = 0;
 
-//   if (reportBackTimer !== null) {
-//     console.log('TIMER ALREADY EXISTS, CANCELLING IT...');
-//     clearTimeout(reportBackTimer);
-//     reportBackTimer = null;
-//   }
-
-//   startTimer(REPORT_BACK_TIMER, timerCallback);
-//   socket.emit('reportBack');
 
   socket.on("add-player", playerHash => {
-    console.log("ADD PLAYER CALLEd");
+    console.log("ADD PLAYER CALLED", playerHash);
     if (!connectedClients[playerHash]) {
-        console.log("setting new index", playerHash);
+        let newPlayer = new Player(playerHash, ++totalPlayers);
+        connectedClients[playerHash] = newPlayer
+        console.log(newPlayer);
+        newPlayer.startDisconnectTimer(removePlayerAndUpdateQueue)
 
-        connectedClients[playerHash] = totalPlayers;
-        totalPlayers++
-    } else {
-
+        console.log("there are currently " + Array.from(Object.values(connectedClients)).length + " connected clients")
     }
-    
   })
+
+//   socket.on('remove-player', playerHash => {
+//     console.log('REMOVE PLAYER CALLED', playerHash);
+//     if (!connectedClients[playerHash]) {
+//         console.log("Player is already disconnected");
+//         return;
+//     }
+//     let disconnectedPlayer = connectedClients[playerHash];
+//     console.log(disconnectedPlayer);
+//     let disconnectedPlayerNumber = disconnectedPlayer.getNumber();
+//     removePlayerAndUpdateQueue(disconnectedPlayer)
+//     console.log("there are currently " + Array.from(Object.values(connectedClients)).length + " connected clients")
+//   })
 
   socket.on('ctrl', (message) => {
     message = JSON.parse(message.data)
-    console.log('ctrl', message);
     const { cmd, context, clientHash } = message;
-    console.log(connectedClients);
+
+    if (!connectedClients[clientHash]) {
+        console.log("Not existing player tried to use controls. Ignoring them");
+        return;
+    }
+    
+    console.log('ctrl', message);
 
     let currentGame = GAMES[GAME_NAME];
-    let playerIndex = connectedClients[clientHash] - 1
-    console.log("Player index is: ", playerIndex);
-    let pressedControl = currentGame.controls[playerIndex][cmd]
+    let playerNumber = connectedClients[clientHash].getNumber()
+    console.log("Player index is: ", playerNumber);
+    let pressedControl = currentGame.controls[playerNumber - 1][cmd]
     if (!pressedControl) return
     console.log("pressedControl", pressedControl);
 
@@ -134,44 +134,17 @@ io.on('connection', (socket) => {
         
     }
 
-    
+    let currentPlayer = connectedClients[clientHash]
+    currentPlayer.startDisconnectTimer(removePlayerAndUpdateQueue)
 
 
     const game = GAME_NAME;
 
-    if (PLAYERS > GAMES[game].players) {
-        console.log('Too many players! Player', PLAYERS);
+    if (totalPlayers > GAMES[game].players) {
+        console.log('Too many players! Player', totalPlayers);
         socket.emit('error', { message: 'Too many players already connected for this game.' });
         return;
     }
-
-
-
-    // Perform the necessary actions based on cmd and context
-    if (GAMES[game].taps.includes(cmd)) {
-        console.log("its a tap");
-
-
-    }
-
-
-
-    if (cmd in GAMES[game].taps) {
-        
-        if (context === 'start') {
-        // Perform tap action
-        }
-    } else if (cmd in GAMES[game].toggles) {
-        console.log("its a toggle");
-        if (context === 'start') {
-            
-        // Perform toggle start action
-        } else {
-        // Perform toggle stop action
-        }
-    }
-
-    console.log('Player', PLAYERS, 'Got', cmd, context);
   });
 
 //   io.on('present', (gamepadHash) => {
@@ -210,38 +183,6 @@ io.on('disconnect', () => {
     socket.emit('reportBack');
 });
 
-
-
-
-// // Runs when server receives a gamepad control
-// io.on('ctrl', (message) => {
-//     console.log('ctrl', message);
-//     const { cmd, context } = message;
-
-//     const game = GAME_NAME;
-//     console.log('CURRENT GAME', game);
-
-//     if (PLAYERS > GAMES[game].players) {
-//         console.log('Too many players! Player', PLAYERS);
-//         socket.emit('error', { message: 'Too many players already connected for this game.' });
-//         return;
-//     }
-
-//     // Perform the necessary actions based on cmd and context
-//     if (cmd in GAMES[game].taps) {
-//         if (context === 'start') {
-//         // Perform tap action
-//         }
-//     } else if (cmd in GAMES[game].toggles) {
-//         if (context === 'start') {
-//         // Perform toggle start action
-//         } else {
-//         // Perform toggle stop action
-//         }
-//     }
-
-//     console.log('Player', PLAYERS, 'Got', cmd, context);
-// });
 
 // Route for games
 app.get('/', (req, res) => {

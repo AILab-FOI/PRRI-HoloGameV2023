@@ -12,7 +12,6 @@ if (gamepadHash === null) {
 	localStorage.setItem('gamepad-hash', gamepadHash)
 }
 
-console.log('changes');
 let imageCounter = 0
 btnChangeBackground.addEventListener('click', function() {
    imageCounter++
@@ -25,7 +24,7 @@ var ws = io();
 	ws.on('connect', function() {
 		ws.emit('add-player', gamepadHash);
          console.log( 'Connected to server!' );
-			startTimeout(600)
+			startTimeout(20)
 	});
 
 	ws.on('error', function( msg ){
@@ -37,18 +36,18 @@ var ws = io();
 	    window.location.href = "/start";
 	});
 
-   ws.on('reportBack', function(){
-		if (gamepadHash === null) {
-         gamepadHash = Date.now()
-         localStorage.setItem('gamepad-hash', gamepadHash);
-      } else {
-         gamepadHash = localStorage.getItem('gamepad-hash')
-      }
+//    ws.on('reportBack', function(){
+// 		if (gamepadHash === null) {
+//          gamepadHash = Date.now()
+//          localStorage.setItem('gamepad-hash', gamepadHash);
+//       } else {
+//          gamepadHash = localStorage.getItem('gamepad-hash')
+//       }
 
-      console.log("Gamepad hash is:", gamepadHash);
+//       console.log("Gamepad hash is:", gamepadHash);
 
-		ws.emit('present', (""+gamepadHash));
-	})
+// 		ws.emit('present', (""+gamepadHash));
+// 	})
 
 
 	
@@ -57,33 +56,33 @@ var ws = io();
 	    ws.emit( 'ctrl', { data: JSON.stringify( { "cmd":ctrl, "context":context, "clientHash": gamepadHash } ) } );
 	}
 	
-	$('.cbutton').on( 'mousedown touchstart', function( event ){
-	    //event.stopPropagation();
-	    event.preventDefault();
-	    if(event.handled !== true) {
+	// $('.cbutton').on( 'mousedown touchstart', function( event ){
+	//     //event.stopPropagation();
+	//     event.preventDefault();
+	//     if(event.handled !== true) {
 		
-		send( $( this ).attr('alt'), 'start' );
-		console.log( 'generic', $( this ).attr('alt'), 'start' );
-		navigator.vibrate(100); 
+	// 	send( $( this ).attr('alt'), 'start' );
+	// 	console.log( 'generic', $( this ).attr('alt'), 'start' );
+	// 	navigator.vibrate(100); 
 		
-		event.handled = true;
-	    } else {
-		return false;
-	    }
-	});
+	// 	event.handled = true;
+	//     } else {
+	// 	return false;
+	//     }
+	// });
 	
-	$('.cbutton').on( 'mouseup touchend touchcancel', function( event ){
-	    //event.stopPropagation();
-	    event.preventDefault();
-	    if(event.handled !== true) {
-		   send( $( this ).attr('alt'), 'stop' );
-		   console.log( 'generic', $( this ).attr('alt'), 'stop' );
+	// $('.cbutton').on( 'mouseup touchend touchcancel', function( event ){
+	//     //event.stopPropagation();
+	//     event.preventDefault();
+	//     if(event.handled !== true) {
+	// 	   send( $( this ).attr('alt'), 'stop' );
+	// 	   console.log( 'generic', $( this ).attr('alt'), 'stop' );
 		
-		   event.handled = true;
-	    } else {
-		   return false;
-	    }
-	});
+	// 	   event.handled = true;
+	//     } else {
+	// 	   return false;
+	//     }
+	// });
 
 var connection_timer;
 
@@ -96,16 +95,20 @@ function startTimeout(seconds){
 
 function timedOut(){
 //    localStorage.clear();
+console.log("TIMED OUT");
+	ws.emit('remove-player', gamepadHash)
 	window.location.href = "/timed-out";
 }
 
 
 function onBeforeUnload(e) {
    e.preventDefault()
-   localStorage.clear();
+//    localStorage.clear();
+	console.log("unload");
+	ws.emit('remove-player', gamepadHash)
 }
 
-// window.addEventListener('unload', onBeforeUnload);
+window.addEventListener('beforeunload', onBeforeUnload);
 	
 console.log(allButtonElements);
 allButtonElements.forEach(btnElement => {
