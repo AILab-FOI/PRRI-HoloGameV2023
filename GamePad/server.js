@@ -207,20 +207,6 @@ io.on('disconnect', () => {
 });
 
 
-// Route for games
-app.get('/', (req, res) => {
-  const { param: gameName } = req.query;
-  GAME = GAMES[gameName];
-  exec(GAME.executable.join(' '), (error) => {
-    if (error) {
-      console.error('Error while executing game:', error);
-    } else {
-      GAME_STARTED = true;
-      res.sendFile('/ctrl.html', { game: gameName });
-    }
-  });
-});
-
 // Route for serving the start button
 app.get('/start', (req, res) => {
     const filePath = path.join(__dirname, '/templates/index.html');
@@ -228,6 +214,11 @@ app.get('/start', (req, res) => {
 });
 
 app.get('/gamepad', (req, res) => {
+    const filePath = path.join(__dirname, '/templates/ctrl.html');
+    res.sendFile(filePath, { game: 'mainPage' });
+});
+
+app.get('/', (req, res) => {
     const filePath = path.join(__dirname, '/templates/ctrl.html');
     res.sendFile(filePath, { game: 'mainPage' });
 });
