@@ -24,7 +24,7 @@ const abe = {
   const bunner = {
     title: "Bunner",
     players: 1,
-    path: "/Users/timjuic/Desktop/hologameV/GamePicker/GameFiles/bunner/bunner.py",
+    path: "/Users/user/Desktop/PRRI-HoloGameV2023/GamePicker/GameFiles/bunner/bunner.py",
     toggles: ["UP", "DOWN", "LEFT", "RIGHT"],
     taps: ["SELECT", "START", "A", "B"],
     controls: [
@@ -44,7 +44,7 @@ const abe = {
   const soccer = {
     title: "soccer",
     players: 4,
-    path: "/Users/timjuic/Desktop/hologameV/GamePicker/GameFiles/soccer/soccer.py",
+    path: "/Users/user/Desktop/PRRI-HoloGameV2023/GamePicker/GameFiles/soccer/soccer.py",
     toggles: ["UP", "DOWN", "LEFT", "RIGHT"],
     taps: ["SELECT", "START", "A", "B"],
     controls: [
@@ -102,7 +102,7 @@ const abe = {
  };
   
   const mainPage = {
-    players: 2,
+    players: 1,
     toggles: ['UP', 'DOWN', 'LEFT', 'RIGHT'],
     taps: ['SELECT', 'START', 'A', 'B'],
     controls: [
@@ -114,14 +114,6 @@ const abe = {
         START: 'enter',
         B: 'enter'
       },
-      {
-        UP: 'up',
-        DOWN: 'down',
-        LEFT: 'left',
-        RIGHT: 'right',
-        START: 'enter',
-        B: 'enter'
-      }
     ]
   };
   

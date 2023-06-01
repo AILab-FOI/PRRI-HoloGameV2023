@@ -176,13 +176,23 @@ io.on('connection', (socket) => {
     
     console.log("Pressed player number: ", playerNumber);
     let pressedControl = currentGame.controls[playerNumber - 1][cmd]
-    if (!pressedControl) return
+    if (!pressedControl) return;
 
     if (currentGame.toggles.includes(cmd)) {
-        if (context == "start") robot.keyToggle(pressedControl, "down");
-        if (context == "stop") robot.keyToggle(pressedControl, "up");
+        try {
+            if (context == "start") robot.keyToggle(pressedControl, "down");
+            if (context == "stop") robot.keyToggle(pressedControl, "up");
+        } catch(e) {
+            console.error(e);
+        }
+        
     } else if (currentGame.taps.includes(cmd)) {
-        if (context == "start") robot.keyTap(pressedControl);
+        try {
+            if (context == "start") robot.keyTap(pressedControl);
+        } catch (e) {
+            console.error(e)
+        }
+        
     }
 
     let currentPlayer = connectedClients[clientHash]
