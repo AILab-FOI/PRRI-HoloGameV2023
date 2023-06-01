@@ -147,6 +147,8 @@ body {
    left:50%;
    top:50%;
    transform: translate(-52%, -55%);
+   height: 40%;
+   width: 40%;
    background-image: url('/gamepad-files/images/lijevi_kontroler/srediste.png');
  }
 
