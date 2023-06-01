@@ -5,7 +5,8 @@ const robot = require("robotjs")
 const os = require('os');
 const { exec, spawn } = require('child_process');
 const app = express();
-var socketGlobal;
+const GAMES = require('./config.js');
+const Player = require('./player.js');
 
 app.use(express.static('gamepad-files'));
 app.use(express.static('gamepicker-files'));
@@ -24,19 +25,15 @@ const server = app.listen(5002, '0.0.0.0', () => {
 });
 
 const io = new Server(server, {
-   pingInterval: 60000,  // Send a ping every 25 seconds
-   pingTimeout: 120000,   // Wait 60 seconds for a response
+   pingInterval: 60000,
+   pingTimeout: 120000,
  });
-const GAMES = require('./config.js');
-const Player = require('./player.js');
-const { log } = require('console');
 
+
+const MENU_GAME_NAME = 'mainPage'
 let totalPlayers = 0;
-let GAME_STARTED = false;
-let GAME_NAME = 'mainPage';
+let GAME_NAME = MENU_GAME_NAME;
 let GAME = GAMES[GAME_NAME];;
-
-// A set to keep track of connected clients
 const connectedClients = {}
 
 
@@ -67,7 +64,6 @@ function removePlayerAndUpdateQueue(playerToDisconnect, socket) {
 
 
 io.on('connection', (socket) => {
-   socketGlobal = socket;
   console.log('Client connected:', socket.id);
 
 //   socket.on("disconnect", (reason) => {
@@ -78,32 +74,24 @@ io.on('connection', (socket) => {
 //  });
 
    socket.on('game-started', gameName => {
-      if (!GAMES[gameName]) {
-         console.log(`Invalid gamename: ${gameName}`)
-         return
-      }
+    if (!GAMES[gameName]) {
+        console.log(`Invalid gamename: ${gameName}`)
+        return
+    }
 
-      GAME_NAME = gameName
-      GAME = GAMES[gameName]
+    GAME_NAME = gameName
+    GAME = GAMES[gameName]
 
-   // // Start the game using the game's path
-   // var gameProcess = exec(GAME.executable[0], (error, stdout, stderr) => {
-   //    if (error) {
-   //    console.error(`Failed to start the game: ${error}`);
-   //    } else {
-   //    console.log("Game started");
-   //    }
-   // });
-      var gameProcess
+    console.log(`Starting the game "${GAME_NAME}"...`);
+
+    var gameProcess
    if (GAME.path.endsWith('.py')) {
       console.log('Its a python game');
       gameProcess = spawn("python3", [GAME.path, "arg1", "arg2"]);
    } else if (GAME.path.endsWith('cpp')) {
       console.log("its a C++ game");
       gameProcess = spawn(GAME.path);
-   }
-   // Start the Python game using the game's path and arguments
-  
+   }  
 
    // Handle game process output
    gameProcess.stdout.on("data", (data) => {
@@ -111,20 +99,13 @@ io.on('connection', (socket) => {
       // Handle game output here, e.g., send it to players, process it, etc.
    });
 
-   // Handle game process error
-   gameProcess.stderr.on("data", (data) => {
-      console.error(`Game error: ${data}`);
-      // Handle game error here, e.g., log it, notify players, etc.
-   });
-
    // Handle game process exit
    gameProcess.on("exit", (code, signal) => {
       console.log(`Game process exited with code ${code} and signal ${signal}`);
       // Handle game process exit here, e.g., update game status, notify players, etc.
+      GAME_NAME = MENU_GAME_NAME;
    });
-
-
-   })
+})
 
   socket.on("add-player", playerHash => {
     console.log("ADD PLAYER CALLED", playerHash);
@@ -206,8 +187,6 @@ io.on('disconnect', () => {
     socket.emit('reportBack');
 });
 
-
-// Route for serving the start button
 app.get('/start', (req, res) => {
     const filePath = path.join(__dirname, '/templates/index.html');
     res.sendFile(filePath, { game: 'mainPage' });
@@ -223,7 +202,6 @@ app.get('/', (req, res) => {
     res.sendFile(filePath, { game: 'mainPage' });
 });
 
-// Route for disconnecting timed out players
 app.get('/timed-out', (req, res) => {
     const filePath = path.join(__dirname, '/templates/timed_out.html');
     res.sendFile(filePath, { game: 'mainPage' });
