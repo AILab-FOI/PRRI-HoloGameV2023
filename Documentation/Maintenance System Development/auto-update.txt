@@ -1,0 +1,32 @@
+import os
+import subprocess
+
+# Postavljanje putanje do direktorija platforme za videoigre
+platform_dir = "/put/do/platforme"
+
+# Postavljanje putanje do repozitorija na GitHubu
+github_repo = "https://github.com/AILab-FOI/PRRI-HoloGameV2023"
+
+# Funkcija za provjeru dostupnosti novih inačica koda na GitHub repozitoriju
+def check_for_updates():
+    subprocess.call(["git", "pull", github_repo])
+
+# Funkcija za instalaciju novih inačica koda
+def install_updates():
+    os.chdir(platform_dir)
+    subprocess.call(["git", "commit", "-am", "Commit before update"])
+    subprocess.call(["git", "pull", github_repo])
+
+# Funkcija za rollback na prethodnu inačicu koda u slučaju neuspjelog ažuriranja
+def rollback():
+    os.chdir(platform_dir)
+    subprocess.call(["git", "reset", "--hard", "HEAD^"])
+
+# Glavni program
+if __name__ == "__main__":
+    try:
+        check_for_updates()
+        install_updates()
+    except Exception as e:
+        print("Error during update: ", e)
+        rollback()
