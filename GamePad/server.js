@@ -91,7 +91,9 @@ io.on('connection', (socket) => {
    } else if (GAME.path.endsWith('cpp')) {
       console.log("its a C++ game");
       gameProcess = spawn(GAME.path);
-   }  
+   }  else {
+      spawn(GAME.path)
+   }
 
    // Handle game process output
    gameProcess.stdout.on("data", (data) => {
@@ -148,7 +150,8 @@ io.on('connection', (socket) => {
     let playerNumber = connectedClients[clientHash].getNumber()
     let maximumPlayers = currentGame.players;
     if (playerNumber > maximumPlayers) {
-        console.log(`Player in queue (${playerNumber - maximumPlayers} in queue) tried to use controls. Ignoring them`);
+        console.log(`Player in queue (${playerNumber - maximumPlayers} in queue) tried to use controls. Sending them back to the queue page...`);
+        socket.emit('queue', maximumPlayers - totalPlayers)
         return;
     }
 
@@ -173,7 +176,6 @@ io.on('connection', (socket) => {
         } catch (e) {
             console.error(e)
         }
-        
     }
 
     let currentPlayer = connectedClients[clientHash]
