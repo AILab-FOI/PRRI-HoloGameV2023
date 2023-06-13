@@ -45,21 +45,6 @@ var ws = io();
    ws.on('unqueue', function() {
 		console.log("GOT UNQUEUE");
 	})
-
-//    ws.on('reportBack', function(){
-// 		if (gamepadHash === null) {
-//          gamepadHash = Date.now()
-//          localStorage.setItem('gamepad-hash', gamepadHash);
-//       } else {
-//          gamepadHash = localStorage.getItem('gamepad-hash')
-//       }
-
-//       console.log("Gamepad hash is:", gamepadHash);
-
-// 		ws.emit('present', (""+gamepadHash));
-// 	})
-
-
 	
 	function send( ctrl, context )
 	{
